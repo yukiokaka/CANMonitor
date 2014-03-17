@@ -1,33 +1,38 @@
 #!/usr/bin/python3
-import os
-import select
+from canmonitor import Canmonitor
 import sys
 
-def encode_line(line):
-    print("RDS000-00000:xxyyzzww")
 
-def enum():
-    with open("./test.txt", "r+") as monitor_io:
-        timeout = 5
-        inputs = [monitor_io]
+def encode_line(line):
+    print(line)
+
+
+def enum(canmonitor):
+    with  canmonitor:
+        canmonitor.f.write("F")
+        canmonitor.f.write("WDS181-00000:")
+        canmonitor.f.write("F")
+        canmonitor.f.flush()
         
-        #polling CANmonitor
-        readables, writables, exceptionals = select.select(inputs,[] , [], timeout)
-        
-        if not (readables or writables or exceptionals):
-            print("TIMEOUT! CANMonitor did not respond ", file=sys.stderr)
-            exit(1)
+        #This seek is test code, beacause test is executed using txt file
+        canmonitor.f.seek(0)
+        #--------------------------------------------------------------#
+
+        print("waiting for response", file = sys.stderr)
+
+        readables = canmonitor.polling()
         
         #encode data from CANmonitor
-        for  f in readables:
+        for f in readables:
             for line in f:
-                encode_line(f)
+                encode_line(line.rstrip())
                 
                 
 
 
 if __name__ == "__main__":
-    enum()
+    canmonitor = Canmonitor("./test.txt")
+    enum(canmonitor)
 
 
 
