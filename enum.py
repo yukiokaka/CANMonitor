@@ -2,35 +2,32 @@
 from canmonitor import Canmonitor
 from devicedata import *
 import sys
+from subprocess import Popen, PIPE
+import struct
 
 
 def enum(canmonitor, devicelist = {}):
     with  canmonitor:
-        canmonitor.f.write("F")
-        canmonitor.f.write("WDS181-00000:")
-        canmonitor.f.write("F")
-        canmonitor.f.flush()
-        
-        #This seek is test code, beacause test is executed using txt file
-        canmonitor.f.seek(0)
-        #--------------------------------------------------------------#
+        canmonitor.f.stdout.flush()
 
+        canmonitor.f.stdin.write(b"F")
+        canmonitor.f.stdin.write(b"WDS181-00000:")
+        canmonitor.f.stdin.write(b"F")
+        canmonitor.f.stdin.flush()
         print("waiting for response", file = sys.stderr)
 
-        readables = canmonitor.polling()
-        
-        #encode data from CANmonitor
-        for f in readables:
-            for line in f:
-                data_msg, devkind, devindex, data, err_flg = encode_line(line)
-                if not(err_flg):
-                    print("Deivce:%s, kind = %d, index = %d" %(devicelist[devkind].devicename, devkind, devindex))
                 
-                
+        resultlist= "".join([chr(i) for i in canmonitor.f.stdout.read(10000)])
+        for i in resultlist.split("\n"):
+            if i.lstrip("\n") != "":
+                data_msg, devkind, devindex, data, err_flg = encode_line(i.lstrip("\n"))
+                print("Deivce:%s, kind = %d, index = %d" %(devicelist[devkind].devicename, devkind, devindex))
+
+
 
 
 if __name__ == "__main__":
-    canmonitor = Canmonitor("./test.txt")
+    canmonitor = Canmonitor("/home/yuki/robotech/svn/circuit/misc/hidaka/pcprogram/canmonitor_sample/canmonitorio")
     enum(canmonitor, read_devicedata())
 
 

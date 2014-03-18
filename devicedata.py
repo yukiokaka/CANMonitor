@@ -37,8 +37,6 @@ def read_devicedata():
             read_data = csv.reader(f)
             new_device = Devicedata(read_data)
             devicelist[new_device.devicekind_id] = new_device
-    for i, data in devicelist.items():
-        data.printdata()
         
     return devicelist
 
@@ -71,5 +69,5 @@ def encode_line(line):
 
 if __name__ == "__main__":
     devicelist = read_devicedata()
-    data_msg, devkind, devindex, data = encode_line("RDE001-00001:xxyyzzww")
+    data_msg, devkind, devindex, data, errr_flg = encode_line("RDE001-00001:xxyyzzww")
     print("Deivce:%s, kind = %d, index = %d" %(devicelist[devkind].devicename, devkind, devindex))
